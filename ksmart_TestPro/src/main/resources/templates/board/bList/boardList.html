@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+	  xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	  layout:decorator="~{layout/default}">
+	  <!-- layout/default.html 안에 있는 모든 내용을 사용하겠다. -->
+
+<th:block layout:fragment="customTitle">
+	<title>게시판 글 리스트</title>
+</th:block>
+<th:block layout:fragment="customContents">
+	<h6>게시판 글 리스트</h6>
+	<form action="/boardList" method="post">
+		<select name="sk">
+			<option value="board_title">제목</option>
+			<option value="board_content">내용</option>
+			<option value="board_user">글쓴이</option>
+		</select>
+		<input type="text" name="sv">
+		<button type="submit">검색</button>
+	</form>
+	<table border="1">
+		<thead>
+			<tr>
+				<th>글번호</th>
+				<th>제목</th>
+				<th>내용</th>
+				<th>글쓴이</th>
+				<th>등록일</th>
+				<th:block th:if="${session.memId != null}">
+					<th>수정</th>
+					<th>삭제</th>
+				</th:block>
+			</tr>
+		</thead>
+		<tbody>
+			<tr th:each="l : ${map.list}">
+				<td th:text="${l.boardNo}"></td>
+				<td th:text="${#strings.abbreviate(l.boardTitle, 15)}"></td>
+				<td th:text="${#strings.abbreviate(l.boardContent, 19)}"></td>
+				<td th:text="${l.boardUser}"></td>
+				<td th:text="${l.boardDate}"></td>
+				<th:block th:if="${session.memId != null}">
+					<td><a th:href="@{/modifyBoard(boardNo=${l.boardNo})}">수정</a></td>
+					<td>삭제</td>
+				</th:block>
+			</tr>
+		</tbody>
+	</table>
+	
+	<span th:if="${map.currentPage > 1}">
+		<a th:href="@{/boardList}">[맨처음]</a>
+		<!-- @{/boardList(currentPage=1)} 에서 (currentPage=1)을 안해줘도 컨트롤러에서 기본값이 1이다. -->
+	</span>
+	<span th:if="${map.currentPage > 1}">
+		<a th:href="@{/boardList(currentPage=${map.currentPage -1})}">[이전]</a>
+	</span>
+	
+	<!-- num : ${#numbers.sequence(1, 5)} 는 단순 반복문 for문과도 같다. -->
+	<!-- for(int num= 1; num<= 5; num++) 이랑 같다고 보면 된다. -->
+	
+	<!-- num : ${#numbers.sequence(map.startPageNum, map.lastPageNum)} -->
+	<!-- for(int num = map.startPageNum; num <= map.lastPageNum; num++) -->
+	<th:block th:each="num: ${#numbers.sequence(map.startPageNum, map.lastPageNum)}">
+		<span th:if="${map.currentPage == num}">
+			[[${'['+num+']'}]]
+		</span>
+		
+		<a th:unless="${map.currentPage == num}"
+		   th:href="@{/boardList(currentPage=${num})}">
+			[[${'['+num+']'}]]
+		</a>
+	</th:block>
+	<span th:if="${map.currentPage < map.lastPage}">
+		<a th:href="@{/boardList(currentPage=${map.currentPage +1})}">[다음]</a>
+	</span>
+	<span th:if="${map.currentPage < map.lastPage}">
+		<a th:href="@{/boardList(currentPage=${map.lastPage})}">[마지막]</a>
+	</span>
+</th:block>
+</html>
